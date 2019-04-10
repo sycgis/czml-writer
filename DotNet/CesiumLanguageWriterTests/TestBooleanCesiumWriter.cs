@@ -36,6 +36,44 @@ namespace CesiumLanguageWriterTests
             Assert.AreEqual("{\"foo\":{\"interval\":\"20120607T12Z/20120607T120140Z\",\"boolean\":false}}", StringWriter.ToString());
         }
 
+        [Test]
+        public void TestDeletePropertyWithStartAndStop()
+        {
+            JulianDate start = new JulianDate(new GregorianDate(2012, 4, 2, 12, 0, 0));
+            JulianDate stop = start.AddDays(1.0);
+
+            using (Packet)
+            {
+                Packet.WriteId("id");
+
+                using (BooleanCesiumWriter writer = new BooleanCesiumWriter("foo"))
+                {
+                    writer.Open(OutputStream);
+                    writer.WriteInterval(start, stop);
+                    writer.WriteDelete(true);
+                }
+            }
+
+            Assert.AreEqual("{\"id\":\"id\",\"foo\":{\"interval\":\"20120402T12Z/20120403T12Z\",\"delete\":true}}", StringWriter.ToString());
+        }
+
+        [Test]
+        public void TestDeletePropertyWithNoInterval()
+        {
+            using (Packet)
+            {
+                Packet.WriteId("id");
+
+                using (BooleanCesiumWriter writer = new BooleanCesiumWriter("foo"))
+                {
+                    writer.Open(OutputStream);
+                    writer.WriteDelete(true);
+                }
+            }
+
+            Assert.AreEqual("{\"id\":\"id\",\"foo\":{\"delete\":true}}", StringWriter.ToString());
+        }
+
         protected override CesiumPropertyWriter<BooleanCesiumWriter> CreatePropertyWriter(string propertyName)
         {
             return new BooleanCesiumWriter(propertyName);

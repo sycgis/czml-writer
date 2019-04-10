@@ -179,6 +179,43 @@ namespace CesiumLanguageWriterTests
             Assert.AreEqual("{\"position\":{\"cartographicRadians\":[]}}", StringWriter.ToString());
         }
 
+        [Test]
+        public void TestDeletePropertyWithStartAndStop()
+        {
+            JulianDate start = new JulianDate(new GregorianDate(2012, 4, 2, 12, 0, 0));
+            JulianDate stop = start.AddDays(1.0);
+
+            using (Packet)
+            {
+                Packet.WriteId("id");
+
+                using (PositionCesiumWriter position = Packet.OpenPositionProperty())
+                using (PositionCesiumWriter interval = position.OpenInterval(start, stop))
+                {
+                    interval.WriteDelete(true);
+                }
+            }
+
+            Assert.AreEqual("{\"id\":\"id\",\"position\":{\"interval\":\"20120402T12Z/20120403T12Z\",\"delete\":true}}", StringWriter.ToString());
+        }
+
+        [Test]
+        public void TestDeletePropertyWithNoInterval()
+        {
+            using (Packet)
+            {
+                Packet.WriteId("id");
+
+                using (PositionCesiumWriter position = Packet.OpenPositionProperty())
+                using (PositionCesiumWriter interval = position.OpenInterval())
+                {
+                    interval.WriteDelete(true);
+                }
+            }
+
+            Assert.AreEqual("{\"id\":\"id\",\"position\":{\"delete\":true}}", StringWriter.ToString());
+        }
+
         protected override CesiumPropertyWriter<PositionCesiumWriter> CreatePropertyWriter(string propertyName)
         {
             return new PositionCesiumWriter(propertyName);
